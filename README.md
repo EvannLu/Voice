@@ -13,3 +13,11 @@ A lightweight, real-time React web application designed to help vocalists visual
 3. Accessible UI: Designed with inclusive practices, including robust keyboard focus states, semantic HTML, ARIA labels for screen readers, and a high-contrast color palette.
 4. Modular Audio Hooks: The audio logic is decoupled from the UI layer. It includes a useMockPitch hook for UI development without requiring microphone permissions, and a useVocalPitch hook for live production tracking.
 
+# Updates
+
+### Real-Time Custom Canvas Scatter Plot & Smart Window Panning (June 2026)
+- **Custom HTML5 Canvas Render Engine:** Replaced the unstable line curve chart with a more clearer Canvas 2D scatter plot visualization.
+- **Fixed Note Row Spacing:** Eliminated dynamic stretching/squeezing of the Y-axis that caused the chart to bounce uncontrollably . The grid now features a rigid vertical scale of 22 pixels per semitone, keeping note intervals more consistent.
+- **Mid-Screen Timeline Scrolling:** Implemented a horizontal scrolling mechanism where the active playhead is locked at the horizontal center (50% mark). Past frequencies drift to the left, while blank space to the right reveals upcoming time.
+- **Dual-Sided Musical Note Axis:** Added natural musical letter names (C1–C8) on both the left and right sides of the canvas grid lines for easy readability at any point.
+- **Auto-Panning with Lock Switch:** Added a vertical auto-panning behavior that glides the view window smoothly to follow the vocalist's pitch. Includes a "Vertical Pan Lock" switch to toggle between a slower, dampened damping rate (prevents sudden octave jumps from throwing the view out of bounds) and an instant follow rate.
