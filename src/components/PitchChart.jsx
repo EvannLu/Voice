@@ -134,7 +134,8 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
     ctx.clearRect(0, 0, W, H);
 
     // ── Background ──────────────────────────────────────────────────────────
-    ctx.fillStyle = "rgba(2, 6, 23, 0.65)";
+    // Warm cream canvas base
+    ctx.fillStyle = "#EDE6D3";
     ctx.fillRect(0, 0, W, H);
 
     // ── Grid lines (clipped to chart area) ──────────────────────────────────
@@ -148,14 +149,16 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
       const y = midiToY(note.midi);
 
       if (note.isC) {
-        ctx.strokeStyle = "rgba(99, 179, 237, 0.30)";
+        // Classic Blue C-note lines
+        ctx.strokeStyle = "rgba(39, 84, 138, 0.32)";
         ctx.lineWidth   = 1.3;
       } else if (note.isNatural) {
-        ctx.strokeStyle = "rgba(148, 163, 184, 0.11)";
+        // Lighter blue natural-note lines
+        ctx.strokeStyle = "rgba(39, 84, 138, 0.14)";
         ctx.lineWidth   = 0.7;
       } else {
-        // sharps — very subtle shading band
-        ctx.fillStyle = "rgba(100, 116, 139, 0.045)";
+        // Sharps — very subtle cream-tinted band
+        ctx.fillStyle = "rgba(24, 59, 78, 0.025)";
         ctx.fillRect(chartLeft, y - PX_PER_SEMITONE / 2, chartWidth, PX_PER_SEMITONE);
         continue;
       }
@@ -171,8 +174,8 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
     // ── Past-region tint ────────────────────────────────────────────────────
     const playX = timeToX(now);
     const pastGrad = ctx.createLinearGradient(chartLeft, 0, playX, 0);
-    pastGrad.addColorStop(0, "rgba(139, 92, 246, 0.03)");
-    pastGrad.addColorStop(1, "rgba(139, 92, 246, 0.10)");
+    pastGrad.addColorStop(0, "rgba(39, 84, 138, 0.03)");
+    pastGrad.addColorStop(1, "rgba(39, 84, 138, 0.09)");
     ctx.fillStyle = pastGrad;
     ctx.fillRect(chartLeft, chartTop, Math.max(0, playX - chartLeft), chartHeight);
 
@@ -190,8 +193,8 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
         ? `bold 11px "SF Mono", "Fira Code", monospace`
         : `10px "SF Mono", "Fira Code", monospace`;
       ctx.fillStyle    = note.isC
-        ? "rgba(99, 202, 250, 0.95)"
-        : "rgba(148, 163, 184, 0.65)";
+        ? "rgba(24, 59, 78, 0.90)"    // Deep Teal for C-notes
+        : "rgba(39, 84, 138, 0.55)";  // Classic Blue for naturals
       ctx.fillText(note.label, chartLeft - 5, y);
 
       // ── RIGHT label ─────────────────────────────────────────────────────
@@ -217,30 +220,31 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
         if (!lineStarted) { ctx.moveTo(x, y); lineStarted = true; }
         else ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = "rgba(139, 92, 246, 0.22)";
+      // Classic Blue trail
+      ctx.strokeStyle = "rgba(39, 84, 138, 0.30)";
       ctx.lineWidth   = 1.5;
       ctx.lineJoin    = "round";
       ctx.stroke();
 
-      // Dots
+      // Dots — Classic Blue palette
       for (const pt of s.points) {
         const x     = timeToX(pt.t);
         const y     = midiToY(hzToMidi(pt.hz));
         if (x < chartLeft || x > chartRight) continue;
         const age   = (now - pt.t) / 1000;
-        const alpha = Math.max(0.08, 1 - age / WINDOW_SECONDS);
+        const alpha = Math.max(0.10, 1 - age / WINDOW_SECONDS);
         const r     = age < 0.3 ? 5 : age < 1 ? 4 : 3;
 
         if (age < 0.5) {
           ctx.beginPath();
           ctx.arc(x, y, r + 5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(167,139,250,${(alpha * 0.18).toFixed(3)})`;
+          ctx.fillStyle = `rgba(39,84,138,${(alpha * 0.15).toFixed(3)})`;
           ctx.fill();
         }
 
         ctx.beginPath();
         ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(167,139,250,${alpha.toFixed(3)})`;
+        ctx.fillStyle = `rgba(39,84,138,${alpha.toFixed(3)})`;
         ctx.fill();
       }
 
@@ -249,11 +253,12 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
 
     // ── Playhead ────────────────────────────────────────────────────────────
     if (isActive) {
+      // Deep Teal playhead line
       const phGrad = ctx.createLinearGradient(0, chartTop, 0, chartBottom);
-      phGrad.addColorStop(0,   "rgba(251,191,36,0)");
-      phGrad.addColorStop(0.2, "rgba(251,191,36,0.85)");
-      phGrad.addColorStop(0.8, "rgba(251,191,36,0.85)");
-      phGrad.addColorStop(1,   "rgba(251,191,36,0)");
+      phGrad.addColorStop(0,   "rgba(24,59,78,0)");
+      phGrad.addColorStop(0.2, "rgba(24,59,78,0.80)");
+      phGrad.addColorStop(0.8, "rgba(24,59,78,0.80)");
+      phGrad.addColorStop(1,   "rgba(24,59,78,0)");
       ctx.strokeStyle = phGrad;
       ctx.lineWidth   = 2;
       ctx.setLineDash([]);
@@ -262,8 +267,8 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
       ctx.lineTo(playX, chartBottom);
       ctx.stroke();
 
-      // Triangle head
-      ctx.fillStyle = "#fbbf24";
+      // Triangle head — Deep Teal
+      ctx.fillStyle = "#183B4E";
       ctx.beginPath();
       ctx.moveTo(playX - 5, chartTop);
       ctx.lineTo(playX + 5, chartTop);
@@ -277,30 +282,34 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
       const liveY  = midiToY(hzToMidi(currentFrequency));
       const pulse  = 0.6 + 0.4 * Math.sin(now / 200);
 
+      // Outer pulse ring — Warm Gold
       ctx.beginPath();
       ctx.arc(playX, liveY, 13 * pulse, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(251,191,36,${(0.13 * pulse).toFixed(3)})`;
+      ctx.fillStyle = `rgba(221,168,83,${(0.25 * pulse).toFixed(3)})`;
       ctx.fill();
 
+      // Main dot — Warm Gold
       ctx.beginPath();
       ctx.arc(playX, liveY, 6, 0, Math.PI * 2);
-      ctx.fillStyle = "#fbbf24";
+      ctx.fillStyle = "#DDA853";
       ctx.fill();
 
+      // Inner highlight — Deep Teal
       ctx.beginPath();
-      ctx.arc(playX, liveY, 3, 0, Math.PI * 2);
-      ctx.fillStyle = "#fff";
+      ctx.arc(playX, liveY, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#183B4E";
       ctx.fill();
     }
 
     // ── Idle overlay ────────────────────────────────────────────────────────
     if (!isActive) {
-      ctx.fillStyle = "rgba(15,23,42,0.55)";
+      // Warm Cream tint overlay
+      ctx.fillStyle = "rgba(237,230,211,0.55)";
       ctx.fillRect(chartLeft, chartTop, chartWidth, chartHeight);
       ctx.textAlign    = "center";
       ctx.textBaseline = "middle";
       ctx.font         = '14px "SF Mono","Fira Code",monospace';
-      ctx.fillStyle    = "rgba(148,163,184,0.5)";
+      ctx.fillStyle    = "rgba(24,59,78,0.45)";
       ctx.fillText(
         "Press Start Singing to begin",
         chartLeft + chartWidth / 2,
@@ -310,7 +319,7 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
 
     // ── X-axis time ticks ───────────────────────────────────────────────────
     ctx.font         = '10px "SF Mono","Fira Code",monospace';
-    ctx.fillStyle    = "rgba(148,163,184,0.4)";
+    ctx.fillStyle    = "rgba(24,59,78,0.38)";
     ctx.textAlign    = "center";
     ctx.textBaseline = "top";
     const windowStart = now - halfWindowMs;
@@ -320,7 +329,7 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
       if (x < chartLeft + 4 || x > chartRight - 4) continue;
       const label = `${((t - now) / 1000).toFixed(0)}s`;
       ctx.fillText(label, x, chartBottom + 3);
-      ctx.strokeStyle = "rgba(148,163,184,0.12)";
+      ctx.strokeStyle = "rgba(39,84,138,0.15)";
       ctx.lineWidth   = 0.5;
       ctx.beginPath();
       ctx.moveTo(x, chartBottom);
@@ -333,8 +342,8 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
     ctx.textBaseline = "top";
     ctx.font         = '10px "SF Mono","Fira Code",monospace';
     ctx.fillStyle    = autoPanLock
-      ? "rgba(99,202,250,0.72)"
-      : "rgba(148,163,184,0.4)";
+      ? "rgba(221,168,83,0.90)"   // Warm Gold when active
+      : "rgba(24,59,78,0.30)";   // faded Deep Teal when off
     ctx.fillText(
       autoPanLock ? "⬡ Pan Lock ON" : "⬡ Pan Lock OFF",
       chartRight - 6,

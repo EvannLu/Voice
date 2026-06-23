@@ -21,3 +21,9 @@ A lightweight, real-time React web application designed to help vocalists visual
 - **Mid-Screen Timeline Scrolling:** Implemented a horizontal scrolling mechanism where the active playhead is locked at the horizontal center (50% mark). Past frequencies drift to the left, while blank space to the right reveals upcoming time.
 - **Dual-Sided Musical Note Axis:** Added natural musical letter names (C1–C8) on both the left and right sides of the canvas grid lines for easy readability at any point.
 - **Auto-Panning with Lock Switch:** Added a vertical auto-panning behavior that glides the view window smoothly to follow the vocalist's pitch. Includes a "Vertical Pan Lock" switch to toggle between a slower, dampened damping rate (prevents sudden octave jumps from throwing the view out of bounds) and an instant follow rate.
+
+### Editorial Palette Redesign & Interactive Card Enhancements (June 2026)
+- **Warm Editorial Color Scheme:** Transitioned the application framework from a dark slate design to a structured warm light aesthetic utilizing a strict 60-30-10 color distribution: Warm Cream (`#F5EEDC`) backgrounds, Classic Blue (`#27548A`) structural navigation frames, Deep Teal (`#183B4E`) typography, and Warm Gold (`#DDA853`) Call-to-Action anchors.
+- **Rethemed Pitch Canvas Engine:** Re-rendered the pitch timeline chart elements to blend seamlessly with the warm theme, using Classic Blue grid overlays and an active Warm Gold frequency indicator.
+- **Interactive Anatomy Reference Cards:** Rethemed all cards on the Anatomy page to a default cream background. Integrated interactive transitions where hovering over a card shifts its background to Classic Blue and dynamically swaps inner text and graphics to cream to maintain clear WCAG AA accessibility contrast.
+- **CSS Import fixes:** Resolved custom font loading warnings by standardizing CSS rule placement.

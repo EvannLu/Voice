@@ -1,0 +1,100 @@
+export default function Anatomy() {
+  return (
+    <section className="flex flex-col items-center w-full max-w-7xl gap-10">
+
+      {/* ── Hero card — Deep Teal dominant header ──────────────────────── */}
+      <div className="w-full rounded-2xl border border-teal/20 bg-teal px-10 py-14 shadow-card-lg text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cream/45 mb-3">
+          Reference Guide
+        </p>
+        <h2 className="text-4xl font-black tracking-tight text-cream sm:text-5xl">
+          Vocal Anatomy
+        </h2>
+        <p className="mt-5 text-lg text-cream/70 max-w-2xl mx-auto leading-relaxed">
+          The human voice is produced by a complex interaction between the lungs, vocal folds,
+          and the articulators. Explore the key components below.
+        </p>
+      </div>
+
+      {/* ── Three anatomy cards ─────────────────────────────────────────── */}
+      <div className="grid gap-6 sm:grid-cols-3 w-full">
+
+        {/* Diaphragm — Cream card */}
+        <article
+          id="anatomy-diaphragm"
+          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
+            <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+            </svg>
+          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-blue/50 group-hover:text-cream/45 mb-2 transition-colors duration-300">01</div>
+          <h3 className="text-xl font-bold text-teal group-hover:text-cream transition-colors duration-300">Diaphragm</h3>
+          <div className="mt-3 h-px w-10 bg-gold/50 mx-auto transition-colors duration-300 group-hover:bg-gold/80"></div>
+          <p className="mt-4 text-sm leading-relaxed text-teal/60 group-hover:text-cream/70 transition-colors duration-300">
+            The power source for your voice, providing the airflow and sub-glottal pressure
+            needed to set the vocal folds in motion.
+          </p>
+        </article>
+
+        {/* Vocal Folds — Cream card */}
+        <article
+          id="anatomy-vocal-folds"
+          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
+            <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-blue/50 group-hover:text-cream/45 mb-2 transition-colors duration-300">02</div>
+          <h3 className="text-xl font-bold text-teal group-hover:text-cream transition-colors duration-300">Vocal Folds</h3>
+          <div className="mt-3 h-px w-10 bg-gold/50 mx-auto transition-colors duration-300 group-hover:bg-gold/80"></div>
+          <p className="mt-4 text-sm leading-relaxed text-teal/60 group-hover:text-cream/70 transition-colors duration-300">
+            The vibrator. As air passes through the larynx, the folds adduct and vibrate,
+            creating the fundamental frequency of your voice.
+          </p>
+        </article>
+
+        {/* Articulators — Cream card */}
+        <article
+          id="anatomy-articulators"
+          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
+            <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-blue/50 group-hover:text-cream/45 mb-2 transition-colors duration-300">03</div>
+          <h3 className="text-xl font-bold text-teal group-hover:text-cream transition-colors duration-300">Articulators</h3>
+          <div className="mt-3 h-px w-10 bg-gold/50 mx-auto transition-colors duration-300 group-hover:bg-gold/80"></div>
+          <p className="mt-4 text-sm leading-relaxed text-teal/60 group-hover:text-cream/70 transition-colors duration-300">
+            The resonators — throat, mouth, and nasal cavity — that shape raw phonation
+            into intelligible speech or expressive song.
+          </p>
+        </article>
+
+      </div>
+
+      {/* ── Divider ────────────────────────────────────────────────────── */}
+      <div className="w-full border-t border-blue/15"></div>
+
+      {/* ── Info strip — Classic Blue structural band ───────────────────── */}
+      <div className="w-full rounded-2xl border border-blue/15 bg-blue/6 px-8 py-6 flex flex-col sm:flex-row items-center gap-6">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue">
+          <svg className="h-5 w-5 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p className="text-sm leading-relaxed text-teal/70 text-center sm:text-left">
+          <span className="font-semibold text-teal">Did you know?</span>{" "}
+          The average human speaks at a fundamental frequency between 85–255 Hz. Head over to
+          the <span className="font-semibold text-blue">Pitch Tracker</span> to measure yours in real time.
+        </p>
+      </div>
+
+    </section>
+  );
+}

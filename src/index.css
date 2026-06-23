@@ -1,11 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Design Tokens ───────────────────────────────────────────────────────────
+   Neutral Light: #F5EEDC  Warm Cream        (60% — canvas / background)
+   Primary:       #27548A  Classic Blue      (30% — structural, nav, sec. text)
+   Dark Accent:   #183B4E  Deep Teal/Navy    (30% — headers, body text)
+   Bright Accent: #DDA853  Warm Gold         (10% — CTA, critical highlights)
+──────────────────────────────────────────────────────────────────────────── */
+
+
 :root {
-  color-scheme: dark;
-  font-family: "Avenir Next", "Segoe UI", sans-serif;
-  background: #020617;
+  color-scheme: light;
+  font-family: "Inter", "Avenir Next", "Segoe UI", sans-serif;
+  background: #F5EEDC;
+
+  --color-cream: #F5EEDC;
+  --color-blue:  #27548A;
+  --color-teal:  #183B4E;
+  --color-gold:  #DDA853;
 }
 
 html,
@@ -17,10 +32,8 @@ body,
 body {
   margin: 0;
   min-width: 320px;
-  background:
-    radial-gradient(circle at top, rgba(14, 165, 233, 0.16), transparent 34%),
-    linear-gradient(180deg, #020617 0%, #0f172a 100%);
-  color: #e2e8f0;
+  background: #F5EEDC;
+  color: #183B4E;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
