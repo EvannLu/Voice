@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Teal rounded square background -->
+  <rect x="0" y="0" width="64" height="64" rx="12" fill="#183B4E"/>
+  <!-- 7 gold waveform bars -->
+  <rect x="6"  y="26" width="5" height="12" rx="1.5" fill="#DDA853"/>
+  <rect x="14" y="18" width="5" height="28" rx="1.5" fill="#DDA853"/>
+  <rect x="22" y="10" width="5" height="44" rx="1.5" fill="#DDA853"/>
+  <rect x="30" y="4"  width="5" height="56" rx="1.5" fill="#DDA853"/>
+  <rect x="38" y="10" width="5" height="44" rx="1.5" fill="#DDA853"/>
+  <rect x="46" y="18" width="5" height="28" rx="1.5" fill="#DDA853"/>
+  <rect x="54" y="26" width="5" height="12" rx="1.5" fill="#DDA853"/>
+</svg>
