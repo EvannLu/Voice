@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Anatomy() {
   return (
     <section className="flex flex-col items-center w-full max-w-7xl gap-10">
@@ -19,26 +21,35 @@ export default function Anatomy() {
       {/* ── Three anatomy cards ─────────────────────────────────────────── */}
       <div className="grid gap-6 sm:grid-cols-3 w-full">
 
-        {/* Diaphragm — Cream card */}
-        <article
-          id="anatomy-diaphragm"
-          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
-        >
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
-            <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-            </svg>
-          </div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-blue/50 group-hover:text-cream/45 mb-2 transition-colors duration-300">01</div>
-          <h3 className="text-xl font-bold text-teal group-hover:text-cream transition-colors duration-300">Diaphragm</h3>
-          <div className="mt-3 h-px w-10 bg-gold/50 mx-auto transition-colors duration-300 group-hover:bg-gold/80"></div>
-          <p className="mt-4 text-sm leading-relaxed text-teal/60 group-hover:text-cream/70 transition-colors duration-300">
-            The power source for your voice, providing the airflow and sub-glottal pressure
-            needed to set the vocal folds in motion.
-          </p>
-        </article>
+        {/* Diaphragm — Cream card (linked) */}
+        <Link to="/anatomy/diaphragm" className="block">
+          <article
+            id="anatomy-diaphragm"
+            className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1 cursor-pointer h-full"
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
+              <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
+            </div>
+            <div className="text-xs font-semibold uppercase tracking-widest text-blue/50 group-hover:text-cream/45 mb-2 transition-colors duration-300">01</div>
+            <h3 className="text-xl font-bold text-teal group-hover:text-cream transition-colors duration-300">Diaphragm</h3>
+            <div className="mt-3 h-px w-10 bg-gold/50 mx-auto transition-colors duration-300 group-hover:bg-gold/80"></div>
+            <p className="mt-4 text-sm leading-relaxed text-teal/60 group-hover:text-cream/70 transition-colors duration-300">
+              The power source for your voice, providing the airflow and sub-glottal pressure
+              needed to set the vocal folds in motion.
+            </p>
+            {/* Explore indicator */}
+            <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-gold/70 group-hover:text-gold transition-colors duration-300">
+              <span>Explore 3D Model</span>
+              <svg className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </article>
+        </Link>
 
-        {/* Vocal Folds — Cream card */}
+        {/* Vocal Folds — Cream card (placeholder link) */}
         <article
           id="anatomy-vocal-folds"
           className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
@@ -55,9 +66,13 @@ export default function Anatomy() {
             The vibrator. As air passes through the larynx, the folds adduct and vibrate,
             creating the fundamental frequency of your voice.
           </p>
+          {/* Coming soon badge */}
+          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30">
+            <span>Coming Soon</span>
+          </div>
         </article>
 
-        {/* Articulators — Cream card */}
+        {/* Articulators — Cream card (placeholder link) */}
         <article
           id="anatomy-articulators"
           className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
@@ -74,6 +89,10 @@ export default function Anatomy() {
             The resonators — throat, mouth, and nasal cavity — that shape raw phonation
             into intelligible speech or expressive song.
           </p>
+          {/* Coming soon badge */}
+          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30">
+            <span>Coming Soon</span>
+          </div>
         </article>
 
       </div>

@@ -1,6 +1,7 @@
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import PitchTracker from "./pages/PitchTracker";
 import Anatomy from "./pages/Anatomy";
+import DiaphragmPage from "./pages/DiaphragmPage";
 
 export default function App() {
   const location = useLocation();
@@ -39,7 +40,7 @@ export default function App() {
               to="/anatomy"
               id="nav-anatomy"
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200 ${
-                location.pathname === "/anatomy"
+                location.pathname.startsWith("/anatomy")
                   ? "bg-gold text-teal shadow-sm"
                   : "text-cream/60 hover:text-cream hover:bg-cream/10"
               }`}
@@ -53,6 +54,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<PitchTracker />} />
           <Route path="/anatomy" element={<Anatomy />} />
+          <Route path="/anatomy/diaphragm" element={<DiaphragmPage />} />
         </Routes>
 
       </div>
