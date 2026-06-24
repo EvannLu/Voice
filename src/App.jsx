@@ -2,7 +2,6 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import PitchTracker from "./pages/PitchTracker";
 import Anatomy from "./pages/Anatomy";
 import DiaphragmPage from "./pages/DiaphragmPage";
-import PosturePage from "./pages/PosturePage";
 
 const ROUTE_METADATA = {
   "/": {
@@ -88,7 +87,6 @@ export default function App() {
           <Route path="/" element={<PitchTracker />} />
           <Route path="/anatomy" element={<Anatomy />} />
           <Route path="/anatomy/diaphragm" element={<DiaphragmPage />} />
-          <Route path="/anatomy/posture" element={<PosturePage />} />
         </Routes>
 
       </div>
