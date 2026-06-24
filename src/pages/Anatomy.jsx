@@ -4,22 +4,9 @@ export default function Anatomy() {
   return (
     <section className="flex flex-col items-center w-full max-w-7xl gap-10">
 
-      {/* ── Hero card — Deep Teal dominant header ──────────────────────── */}
-      <div className="w-full rounded-2xl border border-teal/20 bg-teal px-10 py-14 shadow-card-lg text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cream/45 mb-3">
-          Reference Guide
-        </p>
-        <h2 className="text-4xl font-black tracking-tight text-cream sm:text-5xl">
-          Vocal Anatomy
-        </h2>
-        <p className="mt-5 text-lg text-cream/70 max-w-2xl mx-auto leading-relaxed">
-          The human voice is produced by a complex interaction between the lungs, vocal folds,
-          and the articulators. Explore the key components below.
-        </p>
-      </div>
 
-      {/* ── Three anatomy cards ─────────────────────────────────────────── */}
-      <div className="grid gap-6 sm:grid-cols-3 w-full">
+      {/* ── Anatomy cards ─────────────────────────────────────────── */}
+      <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 w-full">
 
         {/* Diaphragm — Cream card (linked) */}
         <Link to="/anatomy/diaphragm" className="block">
@@ -52,7 +39,7 @@ export default function Anatomy() {
         {/* Vocal Folds — Cream card (placeholder link) */}
         <article
           id="anatomy-vocal-folds"
-          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
+          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1 h-full"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
             <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -67,7 +54,7 @@ export default function Anatomy() {
             creating the fundamental frequency of your voice.
           </p>
           {/* Coming soon badge */}
-          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30">
+          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30 group-hover:text-cream/35">
             <span>Coming Soon</span>
           </div>
         </article>
@@ -75,7 +62,7 @@ export default function Anatomy() {
         {/* Articulators — Cream card (placeholder link) */}
         <article
           id="anatomy-articulators"
-          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1"
+          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1 h-full"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
             <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -90,7 +77,51 @@ export default function Anatomy() {
             into intelligible speech or expressive song.
           </p>
           {/* Coming soon badge */}
-          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30">
+          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30 group-hover:text-cream/35">
+            <span>Coming Soon</span>
+          </div>
+        </article>
+
+        {/* Vocal Registers — Cream card (placeholder link) */}
+        <article
+          id="anatomy-vocal-registers"
+          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1 h-full"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
+            <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-blue/50 group-hover:text-cream/45 mb-2 transition-colors duration-300">04</div>
+          <h3 className="text-xl font-bold text-teal group-hover:text-cream transition-colors duration-300">Vocal Registers</h3>
+          <div className="mt-3 h-px w-10 bg-gold/50 mx-auto transition-colors duration-300 group-hover:bg-gold/80"></div>
+          <p className="mt-4 text-sm leading-relaxed text-teal/60 group-hover:text-cream/70 transition-colors duration-300">
+            Chest voice, head voice, falsetto, and fry — the different vibrational modes of the vocal folds mapping to distinct pitch registers.
+          </p>
+          {/* Coming soon badge */}
+          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30 group-hover:text-cream/35">
+            <span>Coming Soon</span>
+          </div>
+        </article>
+
+        {/* Posture & Alignment — Cream card (placeholder link) */}
+        <article
+          id="anatomy-posture"
+          className="group rounded-2xl border border-blue/15 bg-cream hover:bg-blue p-8 flex flex-col items-center text-center shadow-card transition-all duration-300 hover:shadow-card-lg hover:-translate-y-1 h-full"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue group-hover:bg-cream/15 mb-6 shadow-card transition-all duration-300 group-hover:scale-110">
+            <svg className="h-7 w-7 text-cream" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+          </div>
+          <div className="text-xs font-semibold uppercase tracking-widest text-blue/50 group-hover:text-cream/45 mb-2 transition-colors duration-300">05</div>
+          <h3 className="text-xl font-bold text-teal group-hover:text-cream transition-colors duration-300">Posture & Alignment</h3>
+          <div className="mt-3 h-px w-10 bg-gold/50 mx-auto transition-colors duration-300 group-hover:bg-gold/80"></div>
+          <p className="mt-4 text-sm leading-relaxed text-teal/60 group-hover:text-cream/70 transition-colors duration-300">
+            Optimal physical alignment of the head, spine, and shoulders to minimize throat tension and maximize lung expansion capacity.
+          </p>
+          {/* Coming soon badge */}
+          <div className="mt-auto pt-5 flex items-center gap-1.5 text-xs font-semibold text-teal/30 group-hover:text-cream/35">
             <span>Coming Soon</span>
           </div>
         </article>

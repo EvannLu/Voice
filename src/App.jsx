@@ -3,8 +3,40 @@ import PitchTracker from "./pages/PitchTracker";
 import Anatomy from "./pages/Anatomy";
 import DiaphragmPage from "./pages/DiaphragmPage";
 
+const ROUTE_METADATA = {
+  "/": {
+    title: "Voice Pitch Tracker",
+    description: "Real-time pitch scatter plot with smart window panning.",
+  },
+  "/anatomy": {
+    title: "Voice Anatomy",
+    description: "The human voice is produced through a complex coordination of power, source, and filter.",
+  },
+};
+
+const DEFAULT_METADATA = {
+  title: "Voice Pitch Tracker",
+  description: "Real-time pitch scatter plot with smart window panning.",
+};
+
+function getMetadataForPath(pathname) {
+  // Sort keys by descending length to match more specific base paths first
+  const sortedKeys = Object.keys(ROUTE_METADATA).sort((a, b) => b.length - a.length);
+
+  for (const key of sortedKeys) {
+    if (key === "/") {
+      if (pathname === "/") return ROUTE_METADATA[key];
+    } else if (pathname === key || pathname.startsWith(key + "/")) {
+      return ROUTE_METADATA[key];
+    }
+  }
+  return DEFAULT_METADATA;
+}
+
 export default function App() {
   const location = useLocation();
+
+  const { title, description } = getMetadataForPath(location.pathname);
 
   return (
     <main className="min-h-screen bg-cream px-4 py-8 sm:px-6 lg:px-8">
@@ -14,10 +46,10 @@ export default function App() {
         <header className="w-full max-w-7xl rounded-2xl border border-blue/20 bg-teal px-6 py-4 shadow-card-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-cream">
-              Voice Pitch Tracker
+              {title}
             </h1>
             <p className="text-xs text-cream/55 mt-0.5">
-              Real-time pitch scatter plot with smart window panning.
+              {description}
             </p>
           </div>
 
