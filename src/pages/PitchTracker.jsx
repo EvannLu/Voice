@@ -108,13 +108,16 @@ export default function PitchTracker() {
       {/* ── Right: Scatter Chart ───────────────────────────────────────── */}
       <div className="rounded-2xl border border-blue/15 bg-cream p-4 shadow-card-lg sm:p-5">
         <div className="mb-3 flex items-center justify-between gap-3 px-1">
-          <div>
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-block h-2 w-2 rounded-full ${
+                isRecording ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+              }`}
+              aria-hidden="true"
+            />
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue/60">
               Pitch stream
             </p>
-            <h2 className="mt-1 text-lg font-semibold text-teal">
-              {isRecording ? "Live scatter — pitch over time" : "Idle pitch chart"}
-            </h2>
           </div>
           <div className="rounded-full border border-blue/20 bg-blue/8 px-3 py-1 text-xs font-medium text-blue">
             ±4 s window

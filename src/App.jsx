@@ -44,7 +44,7 @@ export default function App() {
   const { title, description } = getMetadataForPath(location.pathname);
 
   return (
-    <main className="min-h-screen bg-cream px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-cream px-4 pt-5 pb-5 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-8">
 
         {/* ── Navigation Bar — Classic Blue structural frame ───────────────── */}
