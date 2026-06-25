@@ -12,8 +12,15 @@ A lightweight, real-time React web application designed to help vocalists visual
 2. Auto-Expanding Visualization: Features a dynamic line chart that automatically adjusts its Y-axis bounding box to accommodate the singer's current vocal range without dizzying vertical scrolling.
 3. Accessible UI: Designed with inclusive practices, including robust keyboard focus states, semantic HTML, ARIA labels for screen readers, and a high-contrast color palette.
 4. Modular Audio Hook: The audio logic is decoupled from the UI layer. The unified `useVocalPitch` hook encapsulates audio context creation, DSP analysis, permission/status state management, and error handling.
+5. Audio Recording & Interactive Playback: Captures the user's vocal sessions in the background using `MediaRecorder`, rendering a scrubbable HTML5 Canvas timeline. Users can drag/click the chart to seek playback, and view the corresponding pitch note in real-time.
 
 # Updates
+
+### Audio Recording & Synchronized Playback Timeline (June 2026)
+- **Background Audio Capturing:** Integrated `MediaRecorder` into the core audio loop to capture high-fidelity session audio without impacting pitch-tracking performance.
+- **Synchronized Playback Controls:** Replaced the live recording controls with a Play/Pause and Seek media player when stopped, syncing the audio output with real-time visual playhead movement.
+- **Interactive Timeline Scrubbing:** Transformed the canvas chart into an interactive scrubber. Users can drag horizontally or click anywhere on the timeline to seek through the session, updating the playhead position and corresponding note indicator instantly.
+- **Symmetric Time Fade & Pitch Pulse:** Unified the canvas rendering to dynamically fade-in upcoming notes from the right and fade-out past notes to the left. A pulsing golden playhead indicator tracks and displays note values at the current playback position.
 
 ### Real-Time Custom Canvas Scatter Plot & Smart Window Panning (June 2026)
 - **Custom HTML5 Canvas Render Engine:** Replaced the unstable line curve chart with a more clearer Canvas 2D scatter plot visualization.

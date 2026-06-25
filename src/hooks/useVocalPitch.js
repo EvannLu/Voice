@@ -52,7 +52,7 @@ function autoCorrelate(buffer, sampleRate) {
     return sampleRate / T0;
 }
 
-function frequencyToNote(frequency) {
+export function frequencyToNote(frequency) {
     if (frequency === -1) return "--";
     const noteNum = Math.round(12 * (Math.log2(frequency / 440)) + 69);
     const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -83,16 +83,25 @@ export default function useVocalPitch() {
   const mediaStreamRef = useRef(null);
   const animationFrameRef = useRef(null);
   const bufferRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [currentFrequency, setCurrentFrequency] = useState(-1);
   const [currentNote, setCurrentNote] = useState("--");
+  const [audioUrl, setAudioUrl] = useState(null);
+  const [recordingStartTime, setRecordingStartTime] = useState(null);
+  const [recordingDuration, setRecordingDuration] = useState(0);
 
   const stopRecording = useCallback(() => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
     }
 
     if (mediaStreamRef.current) {
@@ -148,6 +157,34 @@ export default function useVocalPitch() {
       analyserRef.current = analyser;
       mediaStreamRef.current = stream;
       bufferRef.current = new Float32Array(analyser.fftSize);
+
+      // Clean up previous recording
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+        setAudioUrl(null);
+      }
+      audioChunksRef.current = [];
+      setRecordingDuration(0);
+
+      // Setup MediaRecorder
+      const startTime = performance.now();
+      setRecordingStartTime(startTime);
+
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      recorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
+        setRecordingDuration(performance.now() - startTime);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+
       setStatus("active");
 
       const tick = () => {
@@ -172,7 +209,17 @@ export default function useVocalPitch() {
       setErrorMessage(message);
       setStatus("blocked");
     }
-  }, [status, stopRecording]);
+  }, [status, stopRecording, audioUrl]);
+
+  const clearSession = useCallback(() => {
+    if (audioUrl) {
+      URL.revokeObjectURL(audioUrl);
+      setAudioUrl(null);
+    }
+    setRecordingStartTime(null);
+    setRecordingDuration(0);
+    setStatus("idle");
+  }, [audioUrl]);
 
   const isActive = status === "active";
 
@@ -188,5 +235,9 @@ export default function useVocalPitch() {
     errorMessage,
     startRecording,
     stopRecording,
+    clearSession,
+    audioUrl,
+    recordingStartTime,
+    recordingDuration,
   };
 }

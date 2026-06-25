@@ -1,52 +1,161 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import PitchChart from "../components/PitchChart";
-import useVocalPitch from "../hooks/useVocalPitch";
+import useVocalPitch, { frequencyToNote } from "../hooks/useVocalPitch";
 
 export default function PitchTracker() {
   const vocalPitch = useVocalPitch();
 
   const {
-    currentFrequency,
-    currentNote,
+    currentFrequency: liveFrequency,
+    currentNote: liveNote,
     isRecording,
     startRecording,
     stopRecording,
+    clearSession,
+    audioUrl,
+    recordingStartTime,
+    recordingDuration,
   } = vocalPitch;
 
   const [autoPanLock, setAutoPanLock] = useState(true);
+  const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [recordedPoints, setRecordedPoints] = useState([]);
+  const audioRef = useRef(null);
+
+  const mode = isRecording ? "recording" : (audioUrl ? "playback" : "idle");
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch((err) => console.error("Error playing audio:", err));
+    }
+  };
+
+  const handleScrub = useCallback((timeMs) => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = timeMs / 1000;
+    setPlaybackTimeMs(timeMs);
+  }, []);
+
+  const handleRecordingComplete = useCallback((points) => {
+    setRecordedPoints(points);
+    setPlaybackTimeMs(0);
+  }, []);
+
+  const handleClearSession = () => {
+    clearSession();
+    setRecordedPoints([]);
+    setPlaybackTimeMs(0);
+    setIsPlaying(false);
+  };
+
+  // Determine display values for current note display
+  let displayNote = "--";
+  let displayFrequency = -1;
+
+  if (mode === "recording") {
+    displayNote = liveNote;
+    displayFrequency = liveFrequency;
+  } else if (mode === "playback") {
+    let closestPt = null;
+    let minDiff = Infinity;
+    for (const pt of recordedPoints) {
+      const diff = Math.abs(pt.t - playbackTimeMs);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestPt = pt;
+      }
+    }
+    if (closestPt && minDiff < 150) {
+      displayFrequency = closestPt.hz;
+      displayNote = frequencyToNote(closestPt.hz);
+    }
+  }
+
+  const formatTime = (ms) => {
+    const totalSecs = Math.floor(ms / 1000);
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   return (
     <section className="grid w-full max-w-7xl gap-6 lg:grid-cols-[380px_1fr] items-start">
+      {/* Hidden audio player */}
+      {audioUrl && (
+        <audio
+          ref={audioRef}
+          src={audioUrl}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onTimeUpdate={(e) => setPlaybackTimeMs(e.target.currentTime * 1000)}
+          onEnded={() => setIsPlaying(false)}
+          className="hidden"
+        />
+      )}
 
       {/* ── Left: Controls + Current Note ─────────────────────────────── */}
       <div className="flex flex-col gap-5 rounded-2xl border border-blue/15 bg-cream shadow-card-lg p-6">
 
-        {/* Start / Stop buttons */}
-        <div className="flex flex-col gap-3 sm:flex-row">
+        {/* Start / Stop / Playback buttons */}
+        <div className="flex flex-col gap-3">
+          {mode === "playback" ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={togglePlay}
+                  id="btn-play-pause"
+                  aria-label={isPlaying ? "Pause playback" : "Play recording"}
+                  className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl bg-gold px-6 py-4 text-base font-bold text-teal shadow-card transition duration-200 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-gold/40 focus:ring-offset-2 focus:ring-offset-cream sm:text-lg"
+                >
+                  {isPlaying ? "Pause Playback" : "Play Session"}
+                </button>
 
-          {/* Primary CTA — Gold bg / Teal text (max pop against cream) */}
-          <button
-            type="button"
-            onClick={startRecording}
-            disabled={isRecording}
-            id="btn-start-singing"
-            aria-label="Start singing and request microphone access"
-            className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl bg-gold px-6 py-4 text-base font-bold text-teal shadow-card transition duration-200 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-gold/40 focus:ring-offset-2 focus:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40 sm:text-lg"
-          >
-            {isRecording ? "Recording…" : "Start Singing"}
-          </button>
+                <button
+                  type="button"
+                  onClick={handleClearSession}
+                  id="btn-record-new"
+                  aria-label="Start a new recording session"
+                  className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl border-2 border-blue/35 bg-transparent px-6 py-4 text-base font-semibold text-blue transition duration-200 hover:border-blue/70 hover:bg-blue/5 focus:outline-none focus:ring-4 focus:ring-blue/20 focus:ring-offset-2 focus:ring-offset-cream sm:text-lg"
+                >
+                  Record New
+                </button>
+              </div>
 
-          {/* Secondary — outlined in Classic Blue */}
-          <button
-            type="button"
-            onClick={stopRecording}
-            disabled={!isRecording}
-            id="btn-stop"
-            aria-label="Stop pitch tracking"
-            className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl border-2 border-blue/35 bg-transparent px-6 py-4 text-base font-semibold text-blue transition duration-200 hover:border-blue/70 hover:bg-blue/5 focus:outline-none focus:ring-4 focus:ring-blue/20 focus:ring-offset-2 focus:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40 sm:text-lg"
-          >
-            Stop
-          </button>
+              <div className="flex justify-between text-xs font-semibold uppercase tracking-[0.15em] text-blue/60 mt-1 px-1">
+                <span>Timeline Time</span>
+                <span>{formatTime(playbackTimeMs)} / {formatTime(recordingDuration)}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={startRecording}
+                disabled={isRecording}
+                id="btn-start-singing"
+                aria-label="Start singing and request microphone access"
+                className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl bg-gold px-6 py-4 text-base font-bold text-teal shadow-card transition duration-200 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-gold/40 focus:ring-offset-2 focus:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40 sm:text-lg"
+              >
+                {isRecording ? "Recording…" : "Start Singing"}
+              </button>
+
+              <button
+                type="button"
+                onClick={stopRecording}
+                disabled={!isRecording}
+                id="btn-stop"
+                aria-label="Stop pitch tracking"
+                className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl border-2 border-blue/35 bg-transparent px-6 py-4 text-base font-semibold text-blue transition duration-200 hover:border-blue/70 hover:bg-blue/5 focus:outline-none focus:ring-4 focus:ring-blue/20 focus:ring-offset-2 focus:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40 sm:text-lg"
+              >
+                Stop
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Current Note Display */}
@@ -60,19 +169,23 @@ export default function PitchTracker() {
           </p>
           <div className="mt-4 flex flex-col items-center gap-3">
             <div className="text-8xl font-black leading-none tracking-tight text-teal tabular-nums sm:text-9xl lg:text-[8.5rem]">
-              {currentNote}
+              {displayNote}
             </div>
             <div className="text-base font-medium tabular-nums text-blue sm:text-lg">
-              {isRecording && currentFrequency > 0
-                ? `${currentFrequency.toFixed(2)} Hz`
+              {displayFrequency > 0
+                ? `${displayFrequency.toFixed(2)} Hz`
+                : mode === "playback"
+                ? "Scrub or play to view pitch..."
                 : "Awaiting microphone input…"}
             </div>
           </div>
           <p className="mt-4 text-sm leading-6 text-teal/50">
             {vocalPitch.errorMessage ? (
               <span className="text-red-500 font-semibold">{vocalPitch.errorMessage}</span>
-            ) : isRecording ? (
+            ) : mode === "recording" ? (
               "Microphone access is active."
+            ) : mode === "playback" ? (
+              "Playback mode active. Drag chart to seek."
             ) : vocalPitch.isPending ? (
               "Requesting microphone access…"
             ) : (
@@ -125,12 +238,14 @@ export default function PitchTracker() {
                   ? "bg-amber-500 animate-pulse"
                   : vocalPitch.isBlocked
                   ? "bg-red-500"
+                  : mode === "playback"
+                  ? "bg-blue animate-pulse"
                   : "bg-slate-400"
               }`}
               aria-hidden="true"
             />
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue/60">
-              Pitch stream
+              {mode === "playback" ? "Playback session" : "Pitch stream"}
             </p>
           </div>
           <div className="rounded-full border border-blue/20 bg-blue/8 px-3 py-1 text-xs font-medium text-blue">
@@ -144,9 +259,15 @@ export default function PitchTracker() {
           style={{ height: "760px", background: "#EDE6D3" }}
         >
           <PitchChart
-            currentFrequency={currentFrequency}
+            currentFrequency={liveFrequency}
             isActive={isRecording}
             autoPanLock={autoPanLock}
+            mode={mode}
+            playbackTimeMs={playbackTimeMs}
+            recordingStartTime={recordingStartTime}
+            recordingDuration={recordingDuration}
+            onScrub={handleScrub}
+            onRecordingComplete={handleRecordingComplete}
           />
         </div>
       </div>
