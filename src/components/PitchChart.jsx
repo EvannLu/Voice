@@ -350,7 +350,13 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
       chartTop + 6,
     );
 
-    s.animFrame = requestAnimationFrame(draw);
+    if (isActive) {
+      s.animFrame = requestAnimationFrame(draw);
+    } else {
+      s.timeoutId = setTimeout(() => {
+        s.animFrame = requestAnimationFrame(draw);
+      }, 1000 / 30);
+    }
   }, [isActive, currentFrequency, autoPanLock]);
 
   // ── Animation loop lifecycle ─────────────────────────────────────────────
@@ -358,6 +364,7 @@ export default function PitchChart({ currentFrequency = 0, isActive = false, aut
     stateRef.current.animFrame = requestAnimationFrame(draw);
     return () => {
       if (stateRef.current.animFrame) cancelAnimationFrame(stateRef.current.animFrame);
+      if (stateRef.current.timeoutId) clearTimeout(stateRef.current.timeoutId);
     };
   }, [draw]);
 

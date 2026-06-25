@@ -3,13 +3,15 @@ import PitchChart from "../components/PitchChart";
 import useVocalPitch from "../hooks/useVocalPitch";
 
 export default function PitchTracker() {
+  const vocalPitch = useVocalPitch();
+
   const {
     currentFrequency,
     currentNote,
     isRecording,
     startRecording,
     stopRecording,
-  } = useVocalPitch();
+  } = vocalPitch;
 
   const [autoPanLock, setAutoPanLock] = useState(true);
 
@@ -40,7 +42,7 @@ export default function PitchTracker() {
             onClick={stopRecording}
             disabled={!isRecording}
             id="btn-stop"
-            aria-label="Stop microphone input"
+            aria-label="Stop pitch tracking"
             className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl border-2 border-blue/35 bg-transparent px-6 py-4 text-base font-semibold text-blue transition duration-200 hover:border-blue/70 hover:bg-blue/5 focus:outline-none focus:ring-4 focus:ring-blue/20 focus:ring-offset-2 focus:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40 sm:text-lg"
           >
             Stop
@@ -67,9 +69,15 @@ export default function PitchTracker() {
             </div>
           </div>
           <p className="mt-4 text-sm leading-6 text-teal/50">
-            {isRecording
-              ? "Microphone access is active."
-              : "The chart remains static until microphone access is granted."}
+            {vocalPitch.errorMessage ? (
+              <span className="text-red-500 font-semibold">{vocalPitch.errorMessage}</span>
+            ) : isRecording ? (
+              "Microphone access is active."
+            ) : vocalPitch.isPending ? (
+              "Requesting microphone access…"
+            ) : (
+              "The chart remains static until microphone access is granted."
+            )}
           </p>
         </div>
 
@@ -111,7 +119,13 @@ export default function PitchTracker() {
           <div className="flex items-center gap-2">
             <span
               className={`inline-block h-2 w-2 rounded-full ${
-                isRecording ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                isRecording
+                  ? "bg-emerald-500 animate-pulse"
+                  : vocalPitch.isPending
+                  ? "bg-amber-500 animate-pulse"
+                  : vocalPitch.isBlocked
+                  ? "bg-red-500"
+                  : "bg-slate-400"
               }`}
               aria-hidden="true"
             />

@@ -61,6 +61,22 @@ function frequencyToNote(frequency) {
     return noteName + octave;
 }           
 
+function getPermissionMessage(error) {
+  if (!error) {
+    return "";
+  }
+
+  if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+    return "Microphone access was denied. Use Start Singing again after allowing the browser prompt.";
+  }
+
+  if (error.name === "NotFoundError") {
+    return "No microphone was found on this device.";
+  }
+
+  return "Microphone access is unavailable in this browser.";
+}
+
 export default function useVocalPitch() {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -68,9 +84,10 @@ export default function useVocalPitch() {
   const animationFrameRef = useRef(null);
   const bufferRef = useRef(null);
 
+  const [status, setStatus] = useState("idle");
+  const [errorMessage, setErrorMessage] = useState("");
   const [currentFrequency, setCurrentFrequency] = useState(-1);
   const [currentNote, setCurrentNote] = useState("--");
-  const [isRecording, setIsRecording] = useState(false);
 
   const stopRecording = useCallback(() => {
     if (animationFrameRef.current) {
@@ -92,7 +109,7 @@ export default function useVocalPitch() {
     bufferRef.current = null;
     setCurrentFrequency(-1);
     setCurrentNote("--");
-    setIsRecording(false);
+    setStatus("idle");
   }, []);
 
   useEffect(() => () => {
@@ -100,14 +117,18 @@ export default function useVocalPitch() {
   }, [stopRecording]);
 
   const startRecording = useCallback(async () => {
-    if (isRecording) {
+    if (status === "active" || status === "pending") {
       return;
     }
 
     if (!navigator.mediaDevices?.getUserMedia) {
-      console.error("Microphone access is not supported in this browser.");
+      setErrorMessage("This browser does not support microphone access.");
+      setStatus("blocked");
       return;
     }
+
+    setErrorMessage("");
+    setStatus("pending");
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -127,7 +148,7 @@ export default function useVocalPitch() {
       analyserRef.current = analyser;
       mediaStreamRef.current = stream;
       bufferRef.current = new Float32Array(analyser.fftSize);
-      setIsRecording(true);
+      setStatus("active");
 
       const tick = () => {
         if (!analyserRef.current || !audioContextRef.current || !bufferRef.current) {
@@ -146,15 +167,25 @@ export default function useVocalPitch() {
 
       animationFrameRef.current = window.requestAnimationFrame(tick);
     } catch (error) {
-      console.error("Unable to start microphone pitch tracking.", error);
+      const message = getPermissionMessage(error);
       stopRecording();
+      setErrorMessage(message);
+      setStatus("blocked");
     }
-  }, [isRecording, stopRecording]);
+  }, [status, stopRecording]);
+
+  const isActive = status === "active";
 
   return {
     currentFrequency,
     currentNote,
-    isRecording,
+    isRecording: isActive,
+    isActive,
+    isPending: status === "pending",
+    isBlocked: status === "blocked",
+    isIdle: status === "idle",
+    status,
+    errorMessage,
     startRecording,
     stopRecording,
   };

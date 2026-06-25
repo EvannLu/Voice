@@ -11,7 +11,7 @@ A lightweight, real-time React web application designed to help vocalists visual
 1. Real-Time DSP (Digital Signal Processing): Utilizes an optimized autocorrelation algorithm to filter out harmonic overtones and accurately track the fundamental frequency of the voice.
 2. Auto-Expanding Visualization: Features a dynamic line chart that automatically adjusts its Y-axis bounding box to accommodate the singer's current vocal range without dizzying vertical scrolling.
 3. Accessible UI: Designed with inclusive practices, including robust keyboard focus states, semantic HTML, ARIA labels for screen readers, and a high-contrast color palette.
-4. Modular Audio Hooks: The audio logic is decoupled from the UI layer. It includes a useMockPitch hook for UI development without requiring microphone permissions, and a useVocalPitch hook for live production tracking.
+4. Modular Audio Hook: The audio logic is decoupled from the UI layer. The unified `useVocalPitch` hook encapsulates audio context creation, DSP analysis, permission/status state management, and error handling.
 
 # Updates
 
@@ -27,3 +27,8 @@ A lightweight, real-time React web application designed to help vocalists visual
 - **Rethemed Pitch Canvas Engine:** Re-rendered the pitch timeline chart elements to blend seamlessly with the warm theme, using Classic Blue grid overlays and an active Warm Gold frequency indicator.
 - **Interactive Anatomy Reference Cards:** Rethemed all cards on the Anatomy page to a default cream background. Integrated interactive transitions where hovering over a card shifts its background to Classic Blue and dynamically swaps inner text and graphics to cream to maintain clear WCAG AA accessibility contrast.
 - **CSS Import fixes:** Resolved custom font loading warnings by standardizing CSS rule placement.
+
+### Technical Performance & Hook Consolidation (June 2026)
+- **Consolidated Audio Hook:** Unified the microphone state management, error handling, and fundamental pitch extraction logic into a single, high-fidelity `useVocalPitch` hook. Removed redundant tracking hooks to streamline the audio architecture.
+- **Enhanced Status Dot & Error UI:** Upgraded the status indicator dot to report multiple real-time microphone phases: active (green pulsing), pending request (amber pulsing), blocked/error (red), and idle (slate). Permission failures and device availability issues are now displayed directly in the controls panel.
+- **Idle Frame Rate Throttling:** Optimized the custom canvas drawing engine in `PitchChart` to cap refresh rates at `~30fps` when idle (stopped), reducing CPU usage and extending battery life for laptop and mobile users. Once started, the rendering smoothly ramps back up to full `60fps+`.
