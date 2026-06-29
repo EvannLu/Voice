@@ -1,9 +1,46 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import PitchChart from "../components/PitchChart";
 import useVocalPitch, { frequencyToNote } from "../hooks/useVocalPitch";
+// Import the mock pitch tracker hook for simulating vocal signals in Dev Mode
+import useMockPitch from "../hooks/useMockPitch";
 
 export default function PitchTracker() {
+  // --- MOCK MODE / SIMULATION STATUS ---
+  // showMockControls is enabled if '?mock=true' query parameter is passed in the URL
+  const [showMockControls, setShowMockControls] = useState(false);
+  // isMockMode indicates if we are using the simulation (mockPitch) instead of real microphone input (vocalPitch)
+  const [isMockMode, setIsMockMode] = useState(false);
+
+  // Check URL query parameters on mount to conditionally expose Mock Mode controls
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mock") === "true") {
+      setShowMockControls(true);
+    }
+  }, []);
+
+  // Initialize both active pitch stream hooks (microphone vs simulated data)
   const vocalPitch = useVocalPitch();
+  const mockPitch = useMockPitch();
+
+  // --- MOCK SIMULATOR INTERACTION ---
+  // If Mock Mode is ON, we project the simulated mockPitch data into the standard
+  // activePitch structure to feed the chart without changing its interface.
+  const activePitch = isMockMode ? {
+    currentFrequency: mockPitch.currentFrequency,
+    currentNote: mockPitch.currentNote,
+    isRecording: mockPitch.isRunning,
+    startRecording: mockPitch.start,
+    stopRecording: mockPitch.stop,
+    status: mockPitch.isRunning ? "active" : "idle",
+    errorMessage: "",
+    isPending: false,
+    isBlocked: false,
+    clearSession: () => {},
+    audioUrl: null,
+    recordingStartTime: mockPitch.recordingStartTime,
+    recordingDuration: 0,
+  } : vocalPitch;
 
   const {
     currentFrequency: liveFrequency,
@@ -15,9 +52,16 @@ export default function PitchTracker() {
     audioUrl,
     recordingStartTime,
     recordingDuration,
-  } = vocalPitch;
+  } = activePitch;
 
-  const [autoPanLock, setAutoPanLock] = useState(true);
+  // --- TEARDOWN / SOURCE RESET CORRELATION ---
+  // Ensure that toggling Mock Mode stops both active vocal and mock loops
+  // to prevent cross-contamination of recording start times or animation frames.
+  useEffect(() => {
+    vocalPitch.stopRecording();
+    mockPitch.stop();
+  }, [isMockMode]);
+
   const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordedPoints, setRecordedPoints] = useState([]);
@@ -138,7 +182,7 @@ export default function PitchTracker() {
                 onClick={startRecording}
                 disabled={isRecording}
                 id="btn-start-singing"
-                aria-label="Start singing and request microphone access"
+                aria-label={isMockMode ? "Start mock pitch simulation" : "Start singing and request microphone access"}
                 className="inline-flex min-h-14 flex-1 items-center justify-center rounded-xl bg-gold px-6 py-4 text-base font-bold text-teal shadow-card transition duration-200 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-gold/40 focus:ring-offset-2 focus:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40 sm:text-lg"
               >
                 {isRecording ? "Recording…" : "Start Singing"}
@@ -176,52 +220,72 @@ export default function PitchTracker() {
                 ? `${displayFrequency.toFixed(2)} Hz`
                 : mode === "playback"
                 ? "Scrub or play to view pitch..."
+                : isMockMode
+                ? "Awaiting simulated pitch data…"
                 : "Awaiting microphone input…"}
             </div>
           </div>
           <p className="mt-4 text-sm leading-6 text-teal/50">
-            {vocalPitch.errorMessage ? (
-              <span className="text-red-500 font-semibold">{vocalPitch.errorMessage}</span>
+            {activePitch.errorMessage ? (
+              <span className="text-red-500 font-semibold">{activePitch.errorMessage}</span>
             ) : mode === "recording" ? (
-              "Microphone access is active."
+              isMockMode ? "Mock pitch simulation is active." : "Microphone access is active."
             ) : mode === "playback" ? (
               "Playback mode active. Drag chart to seek."
-            ) : vocalPitch.isPending ? (
+            ) : activePitch.isPending ? (
               "Requesting microphone access…"
+            ) : isMockMode ? (
+              "The chart remains static until mock pitch is started."
             ) : (
               "The chart remains static until microphone access is granted."
             )}
           </p>
         </div>
 
-        {/* Auto-Pan Lock Toggle */}
-        <div className="rounded-xl border border-blue/12 bg-teal/5 px-5 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-teal">Vertical Pan Lock</p>
-              <p className="mt-0.5 text-xs leading-5 text-teal/55">
-                {autoPanLock
-                  ? "Smoothly follows pitch — prevents sudden jumps"
-                  : "Snaps quickly to new pitch position"}
-              </p>
-            </div>
-            <button
-              type="button"
-              role="switch"
-              id="toggle-pan-lock"
-              aria-checked={autoPanLock}
-              onClick={() => setAutoPanLock((v) => !v)}
-              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-cream ${
-                autoPanLock ? "bg-blue" : "bg-blue/25"
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-cream shadow-md ring-0 transition duration-200 ease-in-out ${
-                  autoPanLock ? "translate-x-5" : "translate-x-0"
+
+
+        {/* Mock Mode Toggle: Exposes controls to switch between mock pitch simulation and mic input */}
+        {showMockControls && (
+          <div className="rounded-xl border border-blue/12 bg-teal/5 px-5 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-teal">Mock Mode (Mock Pitch)</p>
+                <p className="mt-0.5 text-xs leading-5 text-teal/55">
+                  {isMockMode
+                    ? "Generating simulated pitch data"
+                    : "Using real microphone input"}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                id="toggle-mock-mode"
+                aria-checked={isMockMode}
+                onClick={() => setIsMockMode((v) => !v)}
+                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-2 focus:ring-offset-cream ${
+                  isMockMode ? "bg-blue" : "bg-blue/25"
                 }`}
-              />
-            </button>
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-cream shadow-md ring-0 transition duration-200 ease-in-out ${
+                    isMockMode ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
+        )}
+
+        {/* Pitch Display System Note */}
+        <div className="rounded-xl border border-blue/10 bg-blue/3 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue/70">
+            System Guide
+          </p>
+          <p className="mt-2 text-xs leading-5 text-teal/70">
+            <strong>How the Chart & Note Calculator work together:</strong>
+            <br />
+            The note calculator maps your real-time frequency onto 12 absolute pitch classes (F to E). The chart matches this exact 2-octave wrapped layout vertically. This allows vocal accuracy visualization independent of absolute octave registers (e.g. tenor or soprano), eliminating vertical scrolling.
+          </p>
         </div>
 
       </div>
@@ -234,9 +298,9 @@ export default function PitchTracker() {
               className={`inline-block h-2 w-2 rounded-full ${
                 isRecording
                   ? "bg-emerald-500 animate-pulse"
-                  : vocalPitch.isPending
+                  : activePitch.isPending
                   ? "bg-amber-500 animate-pulse"
-                  : vocalPitch.isBlocked
+                  : activePitch.isBlocked
                   ? "bg-red-500"
                   : mode === "playback"
                   ? "bg-blue animate-pulse"
@@ -248,9 +312,6 @@ export default function PitchTracker() {
               {mode === "playback" ? "Playback session" : "Pitch stream"}
             </p>
           </div>
-          <div className="rounded-full border border-blue/20 bg-blue/8 px-3 py-1 text-xs font-medium text-blue">
-            ±4 s window
-          </div>
         </div>
 
         {/* Canvas container */}
@@ -261,7 +322,6 @@ export default function PitchTracker() {
           <PitchChart
             currentFrequency={liveFrequency}
             isActive={isRecording}
-            autoPanLock={autoPanLock}
             mode={mode}
             playbackTimeMs={playbackTimeMs}
             recordingStartTime={recordingStartTime}

@@ -14,18 +14,15 @@ function hzToMidi(hz) {
   return 69 + 12 * Math.log2(hz / 440);
 }
 
-/** Build note grid: every semitone from C1 to C8 */
+/** Build note grid: 24 semitones starting from F (fixed range) */
 function buildNoteGrid() {
   const notes = [];
-  for (let midi = 24; midi <= 108; midi++) {
-    const semitone = ((midi % 12) + 12) % 12;
-    const octave   = Math.floor(midi / 12) - 1;
+  for (let i = 0; i < 24; i++) {
+    const semitone = ((i - 7) % 12 + 12) % 12;
     notes.push({
-      midi,
-      hz:        midiToHz(midi),
+      midi:      i,
       name:      CHROMATIC[semitone],
-      octave,
-      label:     CHROMATIC[semitone] + octave,
+      label:     CHROMATIC[semitone],
       isC:       semitone === 0,
       isNatural: !CHROMATIC[semitone].includes("#"),
     });
@@ -38,11 +35,7 @@ const NOTE_GRID = buildNoteGrid();
 // ─── Drawing Constants ────────────────────────────────────────────────────────
 
 const LABEL_WIDTH      = 54;   // px — note label column on each side
-const WINDOW_SECONDS   = 8;    // total visible time span (seconds)
-const HISTORY_SECONDS  = 40;   // how long we keep accumulated points
-const PX_PER_SEMITONE  = 22;   // ← FIXED gap between each semitone row (px)
-const PAN_SPEED        = 0.06; // smoothing factor when pan lock is OFF (fast)
-const PAN_LOCK_SPEED   = 0.022;// slower smoothing when pan lock is ON
+const WINDOW_MS        = 12000; // visible horizontal window (ms)
 
 /**
  * @param {{
@@ -60,7 +53,6 @@ const PAN_LOCK_SPEED   = 0.022;// slower smoothing when pan lock is ON
 export default function PitchChart({
   currentFrequency = 0,
   isActive = false,
-  autoPanLock = true,
   mode = "idle",
   playbackTimeMs = 0,
   recordingStartTime = null,
@@ -92,9 +84,13 @@ export default function PitchChart({
 
   // ── Accumulate points ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isActive || currentFrequency <= 0 || !recordingStartTime) return;
+    if (!isActive || currentFrequency <= 0 || !recordingStartTime) {
+      console.log("MOCK_DEBUG: Skip accumulate", { isActive, currentFrequency, recordingStartTime });
+      return;
+    }
     const elapsed = performance.now() - recordingStartTime;
     stateRef.current.points.push({ t: elapsed, hz: currentFrequency });
+    console.log("MOCK_DEBUG: Point pushed", { elapsed, hz: currentFrequency, total: stateRef.current.points.length });
   }, [currentFrequency, isActive, recordingStartTime]);
 
   // ── Reset on start ────────────────────────────────────────────────────────
@@ -107,79 +103,55 @@ export default function PitchChart({
   }, [isActive]);
 
   // ── Drag & Seek Event Handlers ───────────────────────────────────────────
+  const scrubToX = (clientX) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !onScrub) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const chartLeft = LABEL_WIDTH;
+    const chartWidth = canvas.offsetWidth - 2 * LABEL_WIDTH;
+    
+    // Calculate the current viewStartMs matching the draw loop logic
+    const playheadThreshold = WINDOW_MS * 0.75;
+    let viewStartMs = 0;
+    if (playbackTimeMs > playheadThreshold) {
+      viewStartMs = playbackTimeMs - playheadThreshold;
+    }
+    
+    // Map X coordinate to absolute time in ms
+    let clickedTime = viewStartMs + ((x - chartLeft) / chartWidth) * WINDOW_MS;
+    clickedTime = Math.max(0, Math.min(clickedTime, recordingDuration));
+    onScrub(clickedTime);
+  };
+
   const handleMouseDown = (e) => {
     if (mode !== "playback" || !onScrub) return;
     isDraggingRef.current = true;
-    dragStartRef.current = {
-      x: e.clientX,
-      time: playbackTimeMs,
-      hasMoved: false,
-    };
+    scrubToX(e.clientX);
   };
 
   const handleMouseMove = (e) => {
     if (!isDraggingRef.current || mode !== "playback" || !onScrub) return;
-    const dx = e.clientX - dragStartRef.current.x;
-    if (Math.abs(dx) > 3) {
-      dragStartRef.current.hasMoved = true;
-    }
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const chartWidth = canvas.offsetWidth - 2 * LABEL_WIDTH;
-    const dt = (dx / chartWidth) * WINDOW_SECONDS * 1000;
-    let newTime = dragStartRef.current.time - dt;
-    newTime = Math.max(0, Math.min(newTime, recordingDuration));
-    onScrub(newTime);
+    scrubToX(e.clientX);
   };
 
-  const handleMouseUp = (e) => {
-    if (!isDraggingRef.current) return;
+  const handleMouseUp = () => {
     isDraggingRef.current = false;
-    
-    if (!dragStartRef.current.hasMoved) {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const chartLeft = LABEL_WIDTH;
-        const chartWidth = canvas.offsetWidth - 2 * LABEL_WIDTH;
-        if (x >= chartLeft && x <= canvas.offsetWidth - chartLeft) {
-          const halfWindowMs = (WINDOW_SECONDS / 2) * 1000;
-          let clickedTime = playbackTimeMs - halfWindowMs + ((x - chartLeft) / chartWidth) * WINDOW_SECONDS * 1000;
-          clickedTime = Math.max(0, Math.min(clickedTime, recordingDuration));
-          onScrub(clickedTime);
-        }
-      }
-    }
   };
 
   const handleTouchStart = (e) => {
     if (mode !== "playback" || !onScrub || e.touches.length === 0) return;
     isDraggingRef.current = true;
-    dragStartRef.current = {
-      x: e.touches[0].clientX,
-      time: playbackTimeMs,
-      hasMoved: false,
-    };
+    scrubToX(e.touches[0].clientX);
   };
 
   const handleTouchMove = (e) => {
     if (!isDraggingRef.current || mode !== "playback" || !onScrub || e.touches.length === 0) return;
-    const dx = e.touches[0].clientX - dragStartRef.current.x;
-    if (Math.abs(dx) > 3) {
-      dragStartRef.current.hasMoved = true;
-    }
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const chartWidth = canvas.offsetWidth - 2 * LABEL_WIDTH;
-    const dt = (dx / chartWidth) * WINDOW_SECONDS * 1000;
-    let newTime = dragStartRef.current.time - dt;
-    newTime = Math.max(0, Math.min(newTime, recordingDuration));
-    onScrub(newTime);
+    scrubToX(e.touches[0].clientX);
   };
 
   const handleTouchEnd = () => {
-    if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
   };
 
@@ -200,21 +172,6 @@ export default function PitchChart({
       ? (recordingStartTime ? performance.now() - recordingStartTime : 0)
       : (mode === "playback" ? playbackTimeMs : 0);
 
-    // ── Determine target vertical centre ────────────────────────────────────
-    const recentMs = 4000;
-    const recentHz = s.points
-      .filter((p) => Math.abs(playheadTimeMs - p.t) < recentMs)
-      .map((p) => p.hz);
-
-    if (recentHz.length > 0) {
-      const recentMidi = recentHz.map(hzToMidi);
-      s.targetMidMidi  = recentMidi.reduce((a, b) => a + b, 0) / recentMidi.length;
-    }
-
-    // ── Smooth pan ──────────────────────────────────────────────────────────
-    const speed = autoPanLock ? PAN_LOCK_SPEED : PAN_SPEED;
-    s.viewMidMidi += (s.targetMidMidi - s.viewMidMidi) * speed;
-
     // ── Layout ──────────────────────────────────────────────────────────────
     const chartLeft   = LABEL_WIDTH;
     const chartRight  = W - LABEL_WIDTH;
@@ -223,22 +180,33 @@ export default function PitchChart({
     const chartBottom = H - 18;
     const chartHeight = chartBottom - chartTop;
 
-    // FIXED layout: midiToY uses PX_PER_SEMITONE, centred on viewMidMidi
-    // Higher MIDI = higher on screen (lower y)
-    const midY = chartTop + chartHeight / 2;
-    function midiToY(midi) {
-      return midY - (midi - s.viewMidMidi) * PX_PER_SEMITONE;
+    // Fixed 2-octave grid mapping
+    const margin = chartHeight / 16;
+    const yBottom = chartBottom - margin;
+    const yTop = chartTop + margin;
+    const rowHeight = (yBottom - yTop) / 23;
+
+    function wrappedMidiToY(val) {
+      return yBottom + (val / 23) * (yTop - yBottom);
     }
 
-    // Visible MIDI range given current chart height
-    const visibleSemitones = chartHeight / PX_PER_SEMITONE;
-    const midiLow  = s.viewMidMidi - visibleSemitones / 2;
-    const midiHigh = s.viewMidMidi + visibleSemitones / 2;
+    function midiToY(absoluteMidi) {
+      const wrapped = ((absoluteMidi + 7) % 24 + 24) % 24;
+      return wrappedMidiToY(wrapped);
+    }
 
-    // Time axis: current time is centred at 50% of chart width
-    const halfWindowMs = (WINDOW_SECONDS / 2) * 1000;
+    // Fixed window duration of 12 seconds
+    const playheadThreshold = WINDOW_MS * 0.75; // view starts scrolling when playhead crosses 75% width
+    
+    let viewStartMs = 0;
+    if (playheadTimeMs > playheadThreshold) {
+      viewStartMs = playheadTimeMs - playheadThreshold;
+    }
+    const viewEndMs = viewStartMs + WINDOW_MS;
+
+    // Map time to X coordinate based on current visible page window
     function timeToX(t) {
-      return chartLeft + ((t - (playheadTimeMs - halfWindowMs)) / (WINDOW_SECONDS * 1000)) * chartWidth;
+      return chartLeft + ((t - viewStartMs) / WINDOW_MS) * chartWidth;
     }
 
     // ── Clear ───────────────────────────────────────────────────────────────
@@ -255,8 +223,7 @@ export default function PitchChart({
     ctx.clip();
 
     for (const note of NOTE_GRID) {
-      if (note.midi < midiLow - 1 || note.midi > midiHigh + 1) continue;
-      const y = midiToY(note.midi);
+      const y = wrappedMidiToY(note.midi);
 
       if (note.isC) {
         ctx.strokeStyle = "rgba(39, 84, 138, 0.32)";
@@ -266,7 +233,7 @@ export default function PitchChart({
         ctx.lineWidth   = 0.7;
       } else {
         ctx.fillStyle = "rgba(24, 59, 78, 0.025)";
-        ctx.fillRect(chartLeft, y - PX_PER_SEMITONE / 2, chartWidth, PX_PER_SEMITONE);
+        ctx.fillRect(chartLeft, y - rowHeight / 2, chartWidth, rowHeight);
         continue;
       }
 
@@ -289,9 +256,8 @@ export default function PitchChart({
     // ── Note labels — LEFT ───────────────────────────────────────────────────
     ctx.save();
     for (const note of NOTE_GRID) {
-      if (note.midi < midiLow - 0.5 || note.midi > midiHigh + 0.5) continue;
       if (!note.isNatural) continue; // only label natural notes
-      const y = midiToY(note.midi);
+      const y = wrappedMidiToY(note.midi);
       if (y < chartTop || y > chartBottom) continue;
 
       ctx.textAlign    = "right";
@@ -317,10 +283,13 @@ export default function PitchChart({
       ctx.rect(chartLeft, chartTop, chartWidth, chartHeight);
       ctx.clip();
 
+      // Filter points to only render those inside the current visible 12s window
+      const visiblePoints = s.points.filter(pt => pt.t >= viewStartMs - 500 && pt.t <= viewEndMs + 500);
+
       // Trail polyline
       ctx.beginPath();
       let lineStarted = false;
-      for (const pt of s.points) {
+      for (const pt of visiblePoints) {
         const x = timeToX(pt.t);
         const y = midiToY(hzToMidi(pt.hz));
         if (x < chartLeft || x > chartRight) { lineStarted = false; continue; }
@@ -332,26 +301,15 @@ export default function PitchChart({
       ctx.lineJoin    = "round";
       ctx.stroke();
 
-      // Dots — Classic Blue palette with symmetric age fade
-      for (const pt of s.points) {
-        const x     = timeToX(pt.t);
-        const y     = midiToY(hzToMidi(pt.hz));
+      // Dots — Classic Blue palette
+      for (const pt of visiblePoints) {
+        const x = timeToX(pt.t);
+        const y = midiToY(hzToMidi(pt.hz));
         if (x < chartLeft || x > chartRight) continue;
-        const age   = (playheadTimeMs - pt.t) / 1000;
-        const dist  = Math.abs(age);
-        const alpha = Math.max(0.10, 1 - dist / (WINDOW_SECONDS / 2));
-        const r     = dist < 0.3 ? 5 : dist < 1 ? 4 : 3;
-
-        if (dist < 0.5) {
-          ctx.beginPath();
-          ctx.arc(x, y, r + 5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(39,84,138,${(alpha * 0.15).toFixed(3)})`;
-          ctx.fill();
-        }
 
         ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(39,84,138,${alpha.toFixed(3)})`;
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(39, 84, 138, 0.75)";
         ctx.fill();
       }
 
@@ -441,18 +399,27 @@ export default function PitchChart({
     }
 
     // ── X-axis time ticks ───────────────────────────────────────────────────
+    // Helper to format ms to m:ss
+    function formatMsToMinSec(ms) {
+      const totalSecs = Math.floor(ms / 1000);
+      const mins = Math.floor(totalSecs / 60);
+      const secs = totalSecs % 60;
+      return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+    }
+
     ctx.font         = '10px "SF Mono","Fira Code",monospace';
     ctx.fillStyle    = "rgba(24,59,78,0.38)";
     ctx.textAlign    = "center";
     ctx.textBaseline = "top";
-    
-    const windowStart = playheadTimeMs - halfWindowMs;
-    const firstTick   = Math.ceil(windowStart / 1000) * 1000;
-    for (let t = firstTick; t <= playheadTimeMs + halfWindowMs; t += 1000) {
+
+    // Draw ticks at absolute multiples of 2 seconds
+    const tickIntervalMs = 2000;
+    const firstTick = Math.ceil(viewStartMs / tickIntervalMs) * tickIntervalMs;
+    for (let t = firstTick; t <= viewEndMs; t += tickIntervalMs) {
       const x = timeToX(t);
-      if (x < chartLeft + 4 || x > chartRight - 4) continue;
-      const label = `${((t - playheadTimeMs) / 1000).toFixed(0)}s`;
-      ctx.fillText(label, x, chartBottom + 3);
+      if (x < chartLeft || x > chartRight) continue;
+
+      ctx.fillText(formatMsToMinSec(t), x, chartBottom + 3);
       ctx.strokeStyle = "rgba(39,84,138,0.15)";
       ctx.lineWidth   = 0.5;
       ctx.beginPath();
@@ -461,19 +428,6 @@ export default function PitchChart({
       ctx.stroke();
     }
 
-    // ── Pan lock badge ──────────────────────────────────────────────────────
-    ctx.textAlign    = "right";
-    ctx.textBaseline = "top";
-    ctx.font         = '10px "SF Mono","Fira Code",monospace';
-    ctx.fillStyle    = autoPanLock
-      ? "rgba(221,168,83,0.90)"
-      : "rgba(24,59,78,0.30)";
-    ctx.fillText(
-      autoPanLock ? "⬡ Pan Lock ON" : "⬡ Pan Lock OFF",
-      chartRight - 6,
-      chartTop + 6,
-    );
-
     if (isActive || mode === "playback") {
       s.animFrame = requestAnimationFrame(draw);
     } else {
@@ -481,7 +435,7 @@ export default function PitchChart({
         s.animFrame = requestAnimationFrame(draw);
       }, 1000 / 30);
     }
-  }, [isActive, mode, currentFrequency, autoPanLock, playbackTimeMs, recordingStartTime, recordingDuration, onScrub]);
+  }, [isActive, mode, currentFrequency, playbackTimeMs, recordingStartTime, recordingDuration, onScrub]);
 
   // ── Animation loop lifecycle ─────────────────────────────────────────────
   useEffect(() => {
